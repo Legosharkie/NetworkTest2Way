@@ -1,62 +1,49 @@
 #include <SDL.h>
-#include "Game.h"
-
-Game* game = nullptr;
+#include <SDL_net.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <fstream>
 
 int main(int argc, char* argv[])
 {
-	const int FPS = 60;
-	const int TPS = 20;
-	const int frameDelay = 1000 / FPS;
-	const int tickDelay = 1000 / TPS;
+	const int MAX_PLAYERS = 2;
+	const int MAX_MSG_LEN = 1000;
 
-	const int W = 1920;
-	const int H = 1080;
-	const int res = 4;
-	const double aspect = (double)W / (double)H;
+	SDL_Init(SDL_INIT_EVERYTHING);
+	SDLNet_Init();
 
-	Uint32 frameStart;
-	int frameTime;
+	IPaddress ip;
+	SDLNet_ResolveHost(&ip, "10.8.5.221", 1234);
 
-	Uint32 tickStart;
-
-	int tickTime;
-	int pause = 0;
-
-	game = new Game();
-	//std::cout << " HEJ" << std::endl;
-	game->init("Hello", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, res, aspect, false);
-	//std::cout << " HEJ" << std::endl;
-	int xpos = 0;
-	Uint32 nextTick = 0;
-
-	while (game->running())
+	TCPsocket client = SDLNet_TCP_Open(&ip);
+	std::string send;
+	char tmp[MAX_MSG_LEN];
+	if (client)
 	{
+		std::cout << "CONNECT" << std::endl;
+		SDLNet_TCP_Recv(client, &tmp[0], MAX_MSG_LEN);
+		std::cout << "RECEIVING: " << tmp << std::endl;
+		//std::cout << tmp;
+	}
 
-		frameStart = SDL_GetTicks();
-		tickStart = SDL_GetTicks();
 
-		game->handleEvents(&pause);
-		if (!pause)
+	//const char* text = "HELLO CLIENT";
+	while (1)
+	{
+		if (client)
 		{
-			if (tickStart >= nextTick)
-			{
-				game->update();
-				nextTick = tickStart + 100;
-			}
-		}
-		game->render();
-
-
-		frameTime = SDL_GetTicks() - frameStart;
-
-		if (frameDelay > frameTime)
-		{
-			SDL_Delay(frameDelay - frameTime);
+			std::getline(std::cin, send);
+			// communicate with client
+			SDLNet_TCP_Send(client, &send[0], send.length() + 1);
+			SDLNet_TCP_Recv(client, tmp, MAX_MSG_LEN);
+			std::cout << tmp << std::endl;
 		}
 	}
 
-	game->clean();
+	SDLNet_TCP_Close(client);
 
+	SDLNet_Quit();
+	SDL_Quit();
 	return 0;
 }
