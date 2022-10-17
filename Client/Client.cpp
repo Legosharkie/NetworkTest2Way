@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 	{
 		if (client)
 		{
+			if(!std::cin.eof())
 			std::getline(std::cin, send);
 			// communicate with client
 			if (send.length() != 0)
