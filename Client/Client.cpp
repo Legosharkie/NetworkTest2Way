@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 				std::getline(std::cin, send);
 
 			SDLNet_TCP_Send(client, &send[0], send.length() + 1);
+			if (SDLNet_CheckSockets())
 			SDLNet_TCP_Recv(client, tmp, MAX_MSG_LEN);
 			std::cout << tmp << std::endl;
 		}
