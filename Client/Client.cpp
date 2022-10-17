@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
 	{
 		if (client)
 		{
-			if(!std::cin.eof())
-			std::getline(std::cin, send);
+			if(std::cin.rdbuf() and std::cin.rdbuf()->in_avail() >= 0)
+				std::getline(std::cin, send);
 			// communicate with client
 			if (send.length() != 0)
 				SDLNet_TCP_Send(client, &send[0], send.length() + 1);
